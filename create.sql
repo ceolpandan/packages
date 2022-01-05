@@ -25,7 +25,7 @@
 --      actual_job_id  VARCHAR2(25)
 --);
 
---select * from jobs_cdp;
---select * from dep_cdp;
-select * from emp_cdp order by department_id desc;
+select * from jobs_cdp;
+select * from dep_cdp;
+select * from emp_cdp order by employee_id desc;
 select * from istoric_joburi;

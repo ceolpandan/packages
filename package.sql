@@ -1,4 +1,7 @@
 CREATE OR REPLACE PACKAGE pachet_emp_cdp IS
+    CURSOR c_emp (param_job_id jobs_cdp.job_id%TYPE) RETURN emp_cdp%ROWTYPE;
+    CURSOR c_get_jobs RETURN jobs_cdp%ROWTYPE;
+    PROCEDURE show_info;
     PROCEDURE set_salary(
         new_salary emp_cdp.salary%TYPE,
         param_nume emp_cdp.last_name%TYPE,
@@ -41,6 +44,29 @@ CREATE OR REPLACE PACKAGE pachet_emp_cdp IS
 END pachet_emp_cdp;
 /
 CREATE OR REPLACE PACKAGE BODY pachet_emp_cdp AS
+    CURSOR c_emp (param_job_id jobs_cdp.job_id%TYPE) RETURN emp_cdp%ROWTYPE IS
+        SELECT * FROM emp_cdp
+        WHERE job_id = param_job_id;
+        
+    CURSOR c_get_jobs RETURN jobs_cdp%ROWTYPE IS
+        SELECT * FROM jobs_cdp;
+        
+    PROCEDURE show_info IS
+        been_there NUMBER;
+    BEGIN
+        FOR jobrow IN pachet_emp_cdp.c_get_jobs LOOP
+            DBMS_OUTPUT.PUT_LINE ('Urmatorii angajati lucreaza ca ' || jobrow.job_title);
+            FOR employee IN pachet_emp_cdp.c_emp(jobrow.job_id) LOOP
+                SELECT count(*) INTO been_there FROM istoric_joburi WHERE emp_id = employee.employee_id AND previous_job_id = jobrow.job_id;
+                DBMS_OUTPUT.PUT_LINE ('Angajatul '|| employee.last_name ||' '|| employee.first_name);
+                IF been_there>0 THEN
+                    DBMS_OUTPUT.PUT_LINE ('si a mai fost angajat pe aceasta pozitie');
+                END IF;
+            END LOOP;
+            DBMS_OUTPUT.NEW_LINE;
+        END LOOP;
+    END show_info;
+    
     PROCEDURE set_salary(
         new_salary emp_cdp.salary%TYPE,
         param_nume emp_cdp.last_name%TYPE,
@@ -86,6 +112,7 @@ CREATE OR REPLACE PACKAGE BODY pachet_emp_cdp AS
         BEGIN
         SELECT employee_id INTO emp_id FROM emp_cdp WHERE first_name = param_prenume AND last_name = param_nume;
         SELECT count(*) INTO num_of_sub FROM emp_cdp WHERE manager_id = emp_id;
+        DBMS_OUTPUT.PUT_LINE(param_nume || ' '|| param_prenume || ' are ' || num_of_sub|| ' subalterni.');
         RETURN num_of_sub;
         EXCEPTION
             WHEN no_data_found THEN
