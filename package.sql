@@ -1,4 +1,8 @@
 CREATE OR REPLACE PACKAGE pachet_emp_cdp IS
+    PROCEDURE set_salary(
+        new_salary emp_cdp.salary%TYPE,
+        param_nume emp_cdp.last_name%TYPE,
+        param_prenume emp_cdp.first_name%TYPE);
     PROCEDURE muta_angajat (
         param_nume              emp_cdp.last_name%TYPE,
         param_prenume           emp_cdp.first_name%TYPE,
@@ -37,6 +41,43 @@ CREATE OR REPLACE PACKAGE pachet_emp_cdp IS
 END pachet_emp_cdp;
 /
 CREATE OR REPLACE PACKAGE BODY pachet_emp_cdp AS
+    PROCEDURE set_salary(
+        new_salary emp_cdp.salary%TYPE,
+        param_nume emp_cdp.last_name%TYPE,
+        param_prenume emp_cdp.first_name%TYPE) IS
+            min_salary_for_job emp_cdp.salary%TYPE;
+            max_salary_for_job emp_cdp.salary%TYPE;
+            current_job_id emp_cdp.job_id%TYPE;
+            emp_id emp_cdp.employee_id%TYPE;
+            CURSOR C IS
+                SELECT employee_id FROM emp_cdp WHERE first_name = param_prenume and last_name = param_nume;
+
+        BEGIN
+        SELECT job_id INTO current_job_id FROM emp_cdp WHERE first_name = param_prenume and last_name = param_nume;
+        SELECT min_salary INTO min_salary_for_job FROM jobs_cdp WHERE job_id = current_job_id;
+        SELECT max_salary INTO max_salary_for_job FROM jobs_cdp WHERE job_id = current_job_id;
+        IF new_salary > min_salary_for_job AND new_salary <= max_salary_for_job THEN
+            UPDATE emp_cdp SET
+                salary = new_salary
+            WHERE first_name = param_prenume and last_name = param_nume;
+            dbms_output.put_line('Salariul a fost actualizat!');
+        ELSE
+            dbms_output.put_line('Angajatul ' || param_nume || ' ' || param_prenume|| ' nu poate primi salariul de ' || new_salary);
+        END IF;
+        EXCEPTION
+        WHEN no_data_found THEN
+            dbms_output.put_line('Nu am gasit angajatul ' || param_nume || ' ' || param_prenume);
+        WHEN too_many_rows THEN
+            dbms_output.put_line('Exista mai multi angajati cu numele respectiv: ');
+            OPEN c;
+            LOOP
+                FETCH c INTO emp_id;
+                EXIT WHEN c%NOTFOUND;
+                dbms_output.put_line(emp_id);
+            END LOOP;
+            CLOSE c;
+    END set_salary;
+    
     FUNCTION get_subalterni(
         param_nume emp_cdp.last_name%TYPE,
         param_prenume emp_cdp.first_name%TYPE) RETURN NUMBER IS

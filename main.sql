@@ -6,7 +6,7 @@ DECLARE
 -------------------Exercitiul 1a
 -------------------adaug un angajat nou cu datele respective folosind functiile din pachet
 
-nume emp_cdp.first_name%type:= 'Altul3';
+nume emp_cdp.first_name%type:= 'Altul';
 prenume emp_cdp.last_name%type := 'Test';
 email emp_cdp.email%type := 'm@m.com';
 telefon emp_cdp.phone_number%type := '060066';
@@ -28,7 +28,11 @@ manager_id emp_cdp.employee_id%TYPE := pachet_emp_cdp.get_manager_id('King', 'St
 --END;
 -------------------Exercitiul 1c
 -------------------subalternii lui Steven King
+--BEGIN
+--    dbms_output.put_line(pachet_emp_cdp.get_subalterni('King', 'Steven'));
+--END;
+-------------------Exercitiul 1e
+-------------------salariul lui ALTUL3
 BEGIN
-    dbms_output.put_line(pachet_emp_cdp.get_subalterni('King', 'Steven'));
+    pachet_emp_cdp.set_salary(17000, prenume, nume);
 END;
-
