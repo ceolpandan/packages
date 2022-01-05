@@ -1,3 +1,7 @@
+ALTER PACKAGE pachet_emp_cdp COMPILE PACKAGE;
+ALTER PACKAGE pachet_emp_cdp COMPILE BODY;
+
+
 DECLARE
 -------------------Exercitiul 1a
 -------------------adaug un angajat nou cu datele respective folosind functiile din pachet
@@ -19,7 +23,12 @@ manager_id emp_cdp.employee_id%TYPE := pachet_emp_cdp.get_manager_id('King', 'St
 --/
 -------------------Exercitiul 1b
 -------------------mut angajatul adaugat la 1a in departamentul Administration
+--BEGIN
+--        pachet_emp_cdp.muta_angajat(prenume, nume, 'Administration', 'Accounting Manager', 'Jennifer', 'Whalen');
+--END;
+-------------------Exercitiul 1c
+-------------------subalternii lui Steven King
 BEGIN
-        pachet_emp_cdp.muta_angajat(prenume, nume, 'Administration', 'Accounting Manager', 'Jennifer', 'Whalen');
+    dbms_output.put_line(pachet_emp_cdp.get_subalterni('King', 'Steven'));
 END;
 

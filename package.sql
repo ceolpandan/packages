@@ -30,24 +30,29 @@ CREATE OR REPLACE PACKAGE pachet_emp_cdp IS
     FUNCTION get_dept_id (param_nume_dept dep_cdp.department_name%TYPE) RETURN dep_cdp.department_id%TYPE;
     FUNCTION get_job_id (
         param_nume_job jobs_cdp.job_title%TYPE) RETURN jobs_cdp.job_id%TYPE; 
---b
-
---TO DO : functie get employee_id
---c
-
---d
-
---e
-
---f
-
---g
-
---h
+    FUNCTION get_subalterni(
+        param_nume emp_cdp.last_name%TYPE,
+        param_prenume emp_cdp.first_name%TYPE) RETURN NUMBER;
 
 END pachet_emp_cdp;
 /
-CREATE OR REPLACE PACKAGE BODY pachet_emp_cdp AS 
+CREATE OR REPLACE PACKAGE BODY pachet_emp_cdp AS
+    FUNCTION get_subalterni(
+        param_nume emp_cdp.last_name%TYPE,
+        param_prenume emp_cdp.first_name%TYPE) RETURN NUMBER IS
+            num_of_sub NUMBER:= 0;
+            emp_id emp_cdp.employee_id%TYPE;
+        BEGIN
+        SELECT employee_id INTO emp_id FROM emp_cdp WHERE first_name = param_prenume AND last_name = param_nume;
+        SELECT count(*) INTO num_of_sub FROM emp_cdp WHERE manager_id = emp_id;
+        RETURN num_of_sub;
+        EXCEPTION
+            WHEN no_data_found THEN
+                dbms_output.put_line('Niciun angajat nu este subordonat angajatului cu codul ' || emp_id);
+            WHEN too_many_rows THEN
+                dbms_output.put_line('Am gasit mai multe inregistrari cu numele ' || param_nume ||' ' || param_prenume);
+
+    END get_subalterni;
     PROCEDURE job_history(
         employee_id emp_cdp.employee_id%TYPE,
         previous_job_id emp_cdp.job_id%TYPE,
@@ -76,6 +81,7 @@ CREATE OR REPLACE PACKAGE BODY pachet_emp_cdp AS
         new_salary       emp_cdp.salary%TYPE;
         new_min_salary   emp_cdp.salary%TYPE;
         emp_id      emp_cdp.employee_id%TYPE;
+        min_comission emp_cdp.commission_pct%TYPE;
 --        
         BEGIN
         SELECT employee_id INTO emp_id FROM emp_cdp WHERE first_name = param_prenume AND last_name = param_nume;
@@ -87,14 +93,15 @@ CREATE OR REPLACE PACKAGE BODY pachet_emp_cdp AS
         ELSE
             new_salary := old_salary;
         END IF;
-
+        
         dbms_output.put_line(old_salary || ' ' || new_salary);
         
         UPDATE emp_cdp SET 
             department_id = dep_id,
             salary = new_salary,
             manager_id = new_manager_id,
-            job_id = new_job_id
+            job_id = new_job_id,
+            hire_date = SYSDATE
         WHERE employee_id = emp_id;
         
         pachet_emp_cdp.job_history(emp_id, old_job_id, new_job_id);

@@ -27,5 +27,5 @@
 
 --select * from jobs_cdp;
 --select * from dep_cdp;
-select * from emp_cdp;
---select * from istoric_joburi;
+select * from emp_cdp order by department_id desc;
+select * from istoric_joburi;
